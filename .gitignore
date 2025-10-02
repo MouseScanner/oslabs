@@ -2,6 +2,7 @@
 lab1/mycat
 lab1/mygrep
 lab2/myls
+lab3/lab3
 
 # Объектные файлы
 *.o
@@ -10,4 +11,3 @@ lab2/myls
 # Временные файлы
 *~
 .DS_Store
-
