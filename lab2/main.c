@@ -46,25 +46,25 @@ void print_permissions(mode_t mode) {
 
 void print_long_format(FileInfo *file) {
     struct stat *st = &file->st;
-    
+
     print_permissions(st->st_mode);
     printf(" %2lu", (unsigned long)st->st_nlink);
-    
+
     struct passwd *pw = getpwuid(st->st_uid);
     printf(" %-8s", pw ? pw->pw_name : "?");
-    
+
     struct group *gr = getgrgid(st->st_gid);
     printf(" %-8s", gr ? gr->gr_name : "?");
-    
+
     printf(" %8lld", (long long)st->st_size);
-    
+
     char time_str[80];
     strftime(time_str, sizeof(time_str), "%b %d %H:%M", localtime(&st->st_mtime));
     printf(" %s", time_str);
-    
+
     const char *color = get_color(st);
     printf(" %s%s%s", color, file->name, color[0] ? COLOR_RESET : "");
-    
+
     if (S_ISLNK(st->st_mode)) {
         char link[1024];
         ssize_t len = readlink(file->path, link, sizeof(link) - 1);
@@ -91,22 +91,22 @@ void list_directory(const char *path, int show_hidden, int long_format) {
         perror(path);
         return;
     }
-    
+
     int capacity = 64, count = 0;
     FileInfo *files = malloc(capacity * sizeof(FileInfo));
-    
+
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (!show_hidden && entry->d_name[0] == '.') continue;
-        
+
         if (count >= capacity) {
             capacity *= 2;
             files = realloc(files, capacity * sizeof(FileInfo));
         }
-        
+
         files[count].name = strdup(entry->d_name);
         snprintf(files[count].path, sizeof(files[count].path), "%s/%s", path, entry->d_name);
-        
+
         if (lstat(files[count].path, &files[count].st) == -1) {
             perror(files[count].path);
             free(files[count].name);
@@ -115,23 +115,23 @@ void list_directory(const char *path, int show_hidden, int long_format) {
         count++;
     }
     closedir(dir);
-    
+
     qsort(files, count, sizeof(FileInfo), compare_files);
-    
+
     if (long_format) {
         long long total = 0;
         for (int i = 0; i < count; i++) {
             total += files[i].st.st_blocks;
         }
         printf("total %lld\n", total / 2);
-        
+
         for (int i = 0; i < count; i++) {
             print_long_format(&files[i]);
         }
     } else {
         print_short_format(files, count);
     }
-    
+
     for (int i = 0; i < count; i++) {
         free(files[i].name);
     }
@@ -140,7 +140,7 @@ void list_directory(const char *path, int show_hidden, int long_format) {
 
 int main(int argc, char *argv[]) {
     int show_hidden = 0, long_format = 0;
-    
+
     int opt;
     while ((opt = getopt(argc, argv, "la")) != -1) {
         switch (opt) {
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
     }
-    
+
     if (optind >= argc) {
         list_directory(".", show_hidden, long_format);
     } else {
@@ -163,6 +163,6 @@ int main(int argc, char *argv[]) {
             list_directory(argv[i], show_hidden, long_format);
         }
     }
-    
+
     return 0;
 }

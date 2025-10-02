@@ -84,7 +84,7 @@ int main(void) {
         if (WIFEXITED(status)) {
             // нормальное завершение через exit()
             printf("Child exited normally with code %d\n", WEXITSTATUS(status));
-        } 
+        }
         else if (WIFSIGNALED(status)) {
             // завершение по сигналу
             printf("Child terminated by signal %d\n", WTERMSIG(status));
