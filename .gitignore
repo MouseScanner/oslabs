@@ -3,6 +3,7 @@ lab1/mycat
 lab1/mygrep
 lab2/myls
 lab3/lab3
+lab4/mychmod
 
 # Объектные файлы
 *.o
