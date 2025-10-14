@@ -4,6 +4,7 @@ lab1/mygrep
 lab2/myls
 lab3/lab3
 lab4/mychmod
+lab5/archiver
 
 # Объектные файлы
 *.o
@@ -12,3 +13,7 @@ lab4/mychmod
 # Временные файлы
 *~
 .DS_Store
+
+# Тестовые файлы и архивы
+*.arch
+test*.txt
