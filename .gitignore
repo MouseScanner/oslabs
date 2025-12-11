@@ -5,6 +5,14 @@ lab2/myls
 lab3/lab3
 lab4/mychmod
 lab5/archiver
+lab6/fifo_receiver
+lab6/fifo_sender
+lab6/pipe_fork
+lab7/receiver
+lab7/sender
+lab8/threads
+
+
 
 # Объектные файлы
 *.o

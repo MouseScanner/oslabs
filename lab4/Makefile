@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200112L
 TARGET = mychmod
 SOURCE = mychmod.c
 

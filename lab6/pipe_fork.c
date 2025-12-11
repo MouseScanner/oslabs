@@ -34,6 +34,9 @@ int main(void) {
         time_info = localtime(&parent_time);
         strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", time_info);
 
+        printf("Parent time: %s\n", time_str);
+        printf("Parent PID: %d\n", getpid());
+
         snprintf(buffer, BUFFER_SIZE, "Time: %s, PID: %d", time_str, getpid());
 
         if (write(pipefd[1], buffer, strlen(buffer) + 1) == -1) {
@@ -42,8 +45,6 @@ int main(void) {
         }
 
         close(pipefd[1]);
-
-        sleep(5);
 
         wait(NULL);
     } else {

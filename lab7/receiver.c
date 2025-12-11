@@ -31,7 +31,8 @@ int main(void) {
 
         printf("Receiver time: %s\n", time_str);
         printf("Receiver PID: %d\n", getpid());
-        printf("Received: %s\n", shm_ptr);
+        printf("Received: %s\n\n", shm_ptr);
+        fflush(stdout);
 
         sleep(1);
     }

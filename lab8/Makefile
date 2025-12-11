@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -D_GNU_SOURCE
-TARGET = archiver
+CFLAGS = -Wall -Wextra -std=c99 -pthread -D_DEFAULT_SOURCE
+TARGET = threads
 SOURCE = main.c
 
 $(TARGET): $(SOURCE)
