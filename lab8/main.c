@@ -16,12 +16,18 @@ void *writer_func(void *arg) {
     int counter = 0;
 
     while (running) {
-        pthread_mutex_lock(&mutex);
+        if (pthread_mutex_lock(&mutex) != 0) {
+            perror("pthread_mutex_lock");
+            break;
+        }
 
         snprintf(shared_buffer, BUFFER_SIZE, "%d", counter);
         counter++;
 
-        pthread_mutex_unlock(&mutex);
+        if (pthread_mutex_unlock(&mutex) != 0) {
+            perror("pthread_mutex_unlock");
+            break;
+        }
 
         usleep(500000);
     }
@@ -34,12 +40,18 @@ void *reader_func(void *arg) {
     char local_buf[BUFFER_SIZE];
 
     while (running) {
-        pthread_mutex_lock(&mutex);
+        if (pthread_mutex_lock(&mutex) != 0) {
+            perror("pthread_mutex_lock");
+            break;
+        }
 
         strncpy(local_buf, shared_buffer, BUFFER_SIZE - 1);
         local_buf[BUFFER_SIZE - 1] = '\0';
 
-        pthread_mutex_unlock(&mutex);
+        if (pthread_mutex_unlock(&mutex) != 0) {
+            perror("pthread_mutex_unlock");
+            break;
+        }
 
         printf("Reader %d (tid=%lu): buffer = \"%s\"\n",
                id, (unsigned long)pthread_self(), local_buf);
@@ -81,8 +93,6 @@ int main(void) {
     for (int i = 0; i < NUM_READERS; i++) {
         pthread_join(readers[i], NULL);
     }
-
-    pthread_mutex_destroy(&mutex);
 
     printf("Done\n");
     return 0;

@@ -43,11 +43,6 @@ int main(void) {
             break;
         }
 
-        time_t current_time = time(NULL);
-        struct tm *time_info = localtime(&current_time);
-        char time_str[64];
-        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", time_info);
-
         char received[SHM_SIZE];
         strncpy(received, shm_ptr, SHM_SIZE - 1);
         received[SHM_SIZE - 1] = '\0';
@@ -57,6 +52,11 @@ int main(void) {
             perror("semop post");
             break;
         }
+
+        time_t current_time = time(NULL);
+        struct tm *time_info = localtime(&current_time);
+        char time_str[64];
+        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", time_info);
 
         printf("Receiver time: %s\n", time_str);
         printf("Receiver PID: %d\n", getpid());

@@ -17,12 +17,13 @@ void *writer_func(void *arg) {
     int counter = 0;
 
     while (running) {
-        sem_wait(&sem);
-
         snprintf(shared_buffer, BUFFER_SIZE, "%d", counter);
         counter++;
 
-        sem_post(&sem);
+        if (sem_post(&sem) != 0) {
+            perror("sem_post");
+            break;
+        }
 
         sleep(1);
     }
@@ -35,12 +36,13 @@ void *reader_func(void *arg) {
     char local_buf[BUFFER_SIZE];
 
     while (running) {
-        sem_wait(&sem);
+        if (sem_wait(&sem) != 0) {
+            perror("sem_wait");
+            break;
+        }
 
         strncpy(local_buf, shared_buffer, BUFFER_SIZE - 1);
         local_buf[BUFFER_SIZE - 1] = '\0';
-
-        sem_post(&sem);
 
         printf("Reader tid=%lu: buffer = \"%s\"\n",
                (unsigned long)pthread_self(), local_buf);
@@ -58,7 +60,7 @@ int main(void) {
 
     memset(shared_buffer, 0, BUFFER_SIZE);
 
-    if (sem_init(&sem, 0, 1) != 0) {
+    if (sem_init(&sem, 0, 0) != 0) {
         perror("sem_init");
         return 1;
     }
