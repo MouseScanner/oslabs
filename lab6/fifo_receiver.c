@@ -32,6 +32,8 @@ int main(void) {
 
     close(fd);
 
+    unlink(FIFO_NAME);
+
     current_time = time(NULL);
     time_info = localtime(&current_time);
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", time_info);
