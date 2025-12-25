@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-#include <time.h>
 
 #define BUFFER_SIZE 64
 
@@ -17,17 +16,11 @@ void *writer_func(void *arg) {
     int counter = 0;
 
     while (running) {
-        snprintf(shared_buffer, BUFFER_SIZE, "%d", counter);
         counter++;
-
-        if (sem_post(&sem) != 0) {
-            perror("sem_post");
-            break;
-        }
-
+        snprintf(shared_buffer, BUFFER_SIZE, "%d", counter);
+        sem_post(&sem);
         sleep(1);
     }
-
     return NULL;
 }
 
@@ -36,21 +29,15 @@ void *reader_func(void *arg) {
     char local_buf[BUFFER_SIZE];
 
     while (running) {
-        if (sem_wait(&sem) != 0) {
-            perror("sem_wait");
-            break;
-        }
-
+        sem_wait(&sem);
         strncpy(local_buf, shared_buffer, BUFFER_SIZE - 1);
         local_buf[BUFFER_SIZE - 1] = '\0';
 
+        pthread_t tid = pthread_self();
         printf("Reader tid=%lu: buffer = \"%s\"\n",
-               (unsigned long)pthread_self(), local_buf);
+               (unsigned long)tid, local_buf);
         fflush(stdout);
-
-        usleep(500000);
     }
-
     return NULL;
 }
 
@@ -74,6 +61,7 @@ int main(void) {
     if (pthread_create(&reader, NULL, reader_func, NULL) != 0) {
         perror("pthread_create reader");
         running = 0;
+        sem_post(&sem);
         pthread_join(writer, NULL);
         sem_destroy(&sem);
         return 1;
@@ -82,6 +70,7 @@ int main(void) {
     sleep(5);
 
     running = 0;
+    sem_post(&sem);
 
     pthread_join(writer, NULL);
     pthread_join(reader, NULL);

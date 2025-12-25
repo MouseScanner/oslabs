@@ -12,32 +12,17 @@ char shared_buffer[BUFFER_SIZE];
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 int running = 1;
-int version = 0;
 
 void *writer_func(void *arg) {
     (void)arg;
     int counter = 0;
 
     while (running) {
-        if (pthread_mutex_lock(&mutex) != 0) {
-            perror("pthread_mutex_lock");
-            break;
-        }
-
+        pthread_mutex_lock(&mutex);
         counter++;
         snprintf(shared_buffer, BUFFER_SIZE, "%d", counter);
-        version++;
-
-        if (pthread_cond_broadcast(&cond) != 0) {
-            perror("pthread_cond_broadcast");
-            pthread_mutex_unlock(&mutex);
-            break;
-        }
-
-        if (pthread_mutex_unlock(&mutex) != 0) {
-            perror("pthread_mutex_unlock");
-            break;
-        }
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mutex);
 
         usleep(500000);
     }
@@ -48,39 +33,18 @@ void *writer_func(void *arg) {
 void *reader_func(void *arg) {
     (void)arg;
     char local_buf[BUFFER_SIZE];
-    int last_version = 0;
 
     while (running) {
-        if (pthread_mutex_lock(&mutex) != 0) {
-            perror("pthread_mutex_lock");
-            break;
-        }
+        pthread_mutex_lock(&mutex);
+        pthread_cond_wait(&cond, &mutex);
+        strncpy(local_buf, shared_buffer, BUFFER_SIZE - 1);
+        local_buf[BUFFER_SIZE - 1] = '\0';
+        pthread_mutex_unlock(&mutex);
 
-        while (version == last_version && running) {
-            if (pthread_cond_wait(&cond, &mutex) != 0) {
-                perror("pthread_cond_wait");
-                pthread_mutex_unlock(&mutex);
-                return NULL;
-            }
-        }
-
-        if (running) {
-            strncpy(local_buf, shared_buffer, BUFFER_SIZE - 1);
-            local_buf[BUFFER_SIZE - 1] = '\0';
-            last_version = version;
-        }
-
-        if (pthread_mutex_unlock(&mutex) != 0) {
-            perror("pthread_mutex_unlock");
-            break;
-        }
-
-        if (running) {
-            pthread_t tid = pthread_self();
-            printf("Reader tid=%lu: buffer = \"%s\"\n",
-                   (unsigned long)tid, local_buf);
-            fflush(stdout);
-        }
+        pthread_t tid = pthread_self();
+        printf("Reader tid=%lu: buffer = \"%s\"\n",
+               (unsigned long)tid, local_buf);
+        fflush(stdout);
 
         usleep(300000 + (rand() % 200000));
     }
@@ -112,13 +76,9 @@ int main(void) {
 
     running = 0;
 
-    if (pthread_mutex_lock(&mutex) != 0) {
-        perror("pthread_mutex_lock");
-    } else {
-        version++;
-        pthread_cond_broadcast(&cond);
-        pthread_mutex_unlock(&mutex);
-    }
+    pthread_mutex_lock(&mutex);
+    pthread_cond_broadcast(&cond);
+    pthread_mutex_unlock(&mutex);
 
     pthread_join(writer, NULL);
     for (int i = 0; i < NUM_READERS; i++) {
