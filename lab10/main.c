@@ -94,8 +94,6 @@ int main(void) {
         pthread_join(readers[i], NULL);
     }
 
-    pthread_rwlock_destroy(&rwlock);
-
     printf("Done\n");
     return 0;
 }
